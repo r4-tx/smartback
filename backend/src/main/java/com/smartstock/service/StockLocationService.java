@@ -2,7 +2,6 @@ package com.smartstock.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import com.smartstock.dto.request.CreateStockLocationRequest;
 import com.smartstock.entity.StockLocation;
@@ -26,7 +25,7 @@ public class StockLocationService {
         return stockLocationRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
-    public StockLocation get(UUID id) {
+    public StockLocation get(Long id) {
         return stockLocationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Local de estoque nao encontrado"));
     }
@@ -47,7 +46,7 @@ public class StockLocationService {
     }
 
     @Transactional
-    public StockLocation update(UUID id, CreateStockLocationRequest request) {
+    public StockLocation update(Long id, CreateStockLocationRequest request) {
         StockLocation stockLocation = get(id);
         stockLocation.setName(request.name());
         stockLocation.setAddress(request.address());
@@ -55,7 +54,7 @@ public class StockLocationService {
         return stockLocationRepository.save(stockLocation);
     }
 
-    public void delete(UUID id) {
+    public void delete(Long id) {
         if (!stockLocationRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Local de estoque nao encontrado");
         }

@@ -23,12 +23,46 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { addProduct, listProducts, type Product } from "@/lib/api"
+import {
+  addProduct,
+  deleteProduct,
+  getProduct,
+  listStockLocations,
+  listProducts,
+  updateProduct,
+  type Product,
+  type StockLocation,
+} from "@/lib/api"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface NewProductFormState {
   name: string
@@ -37,6 +71,7 @@ interface NewProductFormState {
   ref: string
   stock: string
   unit: string
+  stockLocationId: number | null
   price: string
 }
 
@@ -45,27 +80,67 @@ const emptyForm: NewProductFormState = {
   type: "Simples",
   code: "",
   ref: "",
-  stock: "0",
+  stock: "",
   unit: "UN",
-  price: "0",
+  stockLocationId: null,
+  price: "",
 }
+
+const unitOptions = [
+  { value: "UN", label: "UN — Unidade" },
+  { value: "PAR", label: "PAR — Par" },
+  { value: "CX", label: "CX — Caixa" },
+  { value: "PC", label: "PC — Peca" },
+  { value: "PCT", label: "PCT — Pacote" },
+  { value: "FD", label: "FD — Fardo" },
+  { value: "SC", label: "SC — Saco" },
+  { value: "KG", label: "KG — Quilograma" },
+  { value: "G", label: "G — Grama" },
+  { value: "L", label: "L — Litro" },
+  { value: "ML", label: "ML — Mililitro" },
+  { value: "M", label: "M — Metro" },
+  { value: "CM", label: "CM — Centimetro" },
+  { value: "M2", label: "M² — Metro quadrado" },
+  { value: "M3", label: "M³ — Metro cubico" },
+  { value: "DZ", label: "DZ — Duzia" },
+  { value: "CJ", label: "CJ — Conjunto" },
+  { value: "RL", label: "RL — Rolo" },
+  { value: "BD", label: "BD — Balde" },
+  { value: "LT", label: "LT — Lata" },
+  { value: "FR", label: "FR — Frasco" },
+  { value: "TB", label: "TB — Tubo" },
+  { value: "PÇ", label: "PÇ — Peca" },
+  { value: "TON", label: "TON — Tonelada" },
+  { value: "PAL", label: "PAL — Palete/Pallet" },
+]
 
 export function ProductsContent() {
   const [search, setSearch] = useState("")
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [products, setProducts] = useState<Product[]>([])
+  const [locations, setLocations] = useState<StockLocation[]>([])
   const [form, setForm] = useState<NewProductFormState>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [detailsProduct, setDetailsProduct] = useState<Product | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [editForm, setEditForm] = useState<NewProductFormState>(emptyForm)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     void refreshList()
   }, [])
 
   const refreshList = async () => {
-    const data = await listProducts()
-    setProducts(data)
+    const [productsData, locationsData] = await Promise.all([listProducts(), listStockLocations()])
+    setProducts(productsData)
+    setLocations(locationsData)
   }
 
   const filtered = useMemo(() => {
@@ -106,13 +181,14 @@ export function ProductsContent() {
     )
   }
 
-  const handleFormChange = (field: keyof NewProductFormState, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
+  const handleFormChange = (field: keyof NewProductFormState, value: string | number | null) => {
+    setForm((prev) => ({ ...prev, [field]: value as never }))
   }
 
   const canSave =
     form.name.trim().length > 0 &&
-    form.code.trim().length > 0
+    form.code.trim().length > 0 &&
+    form.stockLocationId !== null
 
   const handleSubmit = () => {
     if (!canSave || isSaving) return
@@ -129,6 +205,7 @@ export function ProductsContent() {
           ref: form.ref.trim(),
           stock: Number.isFinite(stockNumber) ? stockNumber : 0,
           unit: form.unit.trim() || "UN",
+          stockLocationId: form.stockLocationId,
           price: Number.isFinite(priceNumber) ? priceNumber : 0,
         })
         await refreshList()
@@ -139,6 +216,99 @@ export function ProductsContent() {
         setIsSaving(false)
       }
     })()
+  }
+
+  const handleDuplicate = async (product: Product) => {
+    try {
+      await addProduct({
+        name: `${product.name} (Copia)`,
+        type: product.type,
+        code: `${product.code}-COPIA`,
+        ref: product.ref,
+        stock: product.stock,
+        unit: product.unit,
+        stockLocationId: product.stockLocationId ?? null,
+        price: product.price,
+      })
+      await refreshList()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel duplicar o produto")
+    }
+  }
+
+  const handleViewDetails = async (productId: number) => {
+    try {
+      const data = await getProduct(productId)
+      setDetailsProduct(data)
+      setIsDetailsOpen(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel carregar os detalhes do produto")
+    }
+  }
+
+  const handleOpenEdit = (product: Product) => {
+    setEditingProduct(product)
+    setEditForm({
+      name: product.name,
+      type: product.type,
+      code: product.code,
+      ref: product.ref,
+      stock: String(product.stock),
+      unit: product.unit,
+      stockLocationId: product.stockLocationId ?? null,
+      price: String(product.price),
+    })
+    setIsEditOpen(true)
+  }
+
+  const handleEditChange = (field: keyof NewProductFormState, value: string) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingProduct || isUpdating) return
+    setIsUpdating(true)
+    try {
+      const stockNumber = Number(editForm.stock.replace(",", "."))
+      const priceNumber = Number(editForm.price.replace(",", "."))
+      await updateProduct(editingProduct.id, {
+        name: editForm.name.trim(),
+        type: editForm.type.trim() || "Simples",
+        code: editForm.code.trim(),
+        ref: editForm.ref.trim(),
+        stock: Number.isFinite(stockNumber) ? stockNumber : 0,
+        unit: editForm.unit.trim() || "UN",
+        stockLocationId: editForm.stockLocationId,
+        price: Number.isFinite(priceNumber) ? priceNumber : 0,
+      })
+      await refreshList()
+      setIsEditOpen(false)
+      setEditingProduct(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel editar o produto")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleOpenDelete = (product: Product) => {
+    setDeletingProduct(product)
+    setIsDeleteOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingProduct || isDeleting) return
+    setIsDeleting(true)
+    try {
+      await deleteProduct(deletingProduct.id)
+      await refreshList()
+      setIsDeleteOpen(false)
+      setDeletingProduct(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel excluir o produto")
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const totalStock = useMemo(
@@ -203,25 +373,46 @@ export function ProductsContent() {
                 className="bg-card"
               />
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <Input
                 placeholder="Estoque inicial"
                 value={form.stock}
                 onChange={(e) => handleFormChange("stock", e.target.value)}
                 className="bg-card"
               />
-              <Input
-                placeholder="Unidade (PAR, UN...)"
-                value={form.unit}
-                onChange={(e) => handleFormChange("unit", e.target.value)}
-                className="bg-card"
-              />
+              <Select value={form.unit} onValueChange={(value) => handleFormChange("unit", value)}>
+                <SelectTrigger className="bg-card w-full">
+                  <SelectValue placeholder="Unidade (PAR, UN...)" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {unitOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Input
                 placeholder="Preco de venda"
                 value={form.price}
                 onChange={(e) => handleFormChange("price", e.target.value)}
                 className="bg-card"
               />
+              <Select
+                value={form.stockLocationId !== null ? String(form.stockLocationId) : undefined}
+                onValueChange={(value) => handleFormChange("stockLocationId", Number(value))}
+              >
+                <SelectTrigger className="bg-card w-full">
+                  <SelectValue placeholder="Local de estoque" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={String(location.id)}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button
               className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
@@ -361,11 +552,16 @@ export function ProductsContent() {
                           <MoreVertical className="size-3.5 text-muted-foreground" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                        <DropdownMenuItem>Ver detalhes</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
+                        <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenEdit(product)}>Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => void handleDuplicate(product)}>Duplicar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => void handleViewDetails(product.id)}>Ver detalhes</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="bg-destructive text-white hover:bg-destructive/90 focus:bg-destructive/90"
+                          onClick={() => handleOpenDelete(product)}
+                        >
+                          Excluir
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -387,6 +583,132 @@ export function ProductsContent() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detalhes do produto</DialogTitle>
+            <DialogDescription>Informacoes completas do produto selecionado.</DialogDescription>
+          </DialogHeader>
+          {detailsProduct ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div><span className="font-semibold">Nome:</span> {detailsProduct.name}</div>
+              <div><span className="font-semibold">Codigo:</span> {detailsProduct.code}</div>
+              <div><span className="font-semibold">Referencia:</span> {detailsProduct.ref}</div>
+              <div><span className="font-semibold">Tipo:</span> {detailsProduct.type}</div>
+              <div><span className="font-semibold">Unidade:</span> {detailsProduct.unit}</div>
+              <div>
+                <span className="font-semibold">Local:</span>{" "}
+                {locations.find((l) => l.id === detailsProduct.stockLocationId)?.name ?? "Nao definido"}
+              </div>
+              <div><span className="font-semibold">Estoque:</span> {detailsProduct.stock}</div>
+              <div>
+                <span className="font-semibold">Preco:</span>{" "}
+                {detailsProduct.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </div>
+              <div><span className="font-semibold">Situacao:</span> {detailsProduct.status}</div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar produto</DialogTitle>
+            <DialogDescription>Atualize os dados e salve para persistir no banco.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <Input
+              placeholder="Nome do produto"
+              value={editForm.name}
+              onChange={(e) => handleEditChange("name", e.target.value)}
+              className="bg-card"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <Input
+                placeholder="Codigo interno"
+                value={editForm.code}
+                onChange={(e) => handleEditChange("code", e.target.value)}
+                className="bg-card"
+              />
+              <Input
+                placeholder="Referencia interna"
+                value={editForm.ref}
+                onChange={(e) => handleEditChange("ref", e.target.value)}
+                className="bg-card"
+              />
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <Input
+                placeholder="Estoque inicial"
+                value={editForm.stock}
+                onChange={(e) => handleEditChange("stock", e.target.value)}
+                className="bg-card"
+              />
+              <Select value={editForm.unit} onValueChange={(value) => handleEditChange("unit", value)}>
+                <SelectTrigger className="bg-card w-full">
+                  <SelectValue placeholder="Unidade (PAR, UN...)" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {unitOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="Preco de venda"
+                value={editForm.price}
+                onChange={(e) => handleEditChange("price", e.target.value)}
+                className="bg-card"
+              />
+              <Select
+                value={editForm.stockLocationId !== null ? String(editForm.stockLocationId) : undefined}
+                onValueChange={(value) => handleEditChange("stockLocationId", Number(value))}
+              >
+                <SelectTrigger className="bg-card w-full">
+                  <SelectValue placeholder="Local de estoque" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={String(location.id)}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
+            <Button onClick={() => void handleSaveEdit()} disabled={isUpdating}>
+              {isUpdating ? "Salvando..." : "Salvar alteracoes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja excluir?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa acao removera o produto {deletingProduct ? `"${deletingProduct.name}"` : ""} do banco de dados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => void handleConfirmDelete()}
+            >
+              {isDeleting ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

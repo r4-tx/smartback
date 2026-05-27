@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartStock Mobile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ddd;
+      font-family: 'Geist', 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 30px 16px;
+    }
+
+    .phone {
+      width: 360px;
+      background: #f5f5f5;
+      border: 6px solid #222;
+      border-radius: 30px;
+      overflow: hidden;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
+    .screen.active { display: flex; }
+
+    /* LOGIN */
+    .login-top {
+      background: #3b5bdb;
+      padding: 40px 20px 30px;
+      text-align: center;
+    }
+    .login-top h1 { color: white; font-size: 22px; font-weight: 700; }
+    .login-top p { color: #c5cef9; font-size: 13px; margin-top: 4px; }
+
+    .login-box {
+      background: white;
+      margin: 16px;
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid #ddd;
+    }
+    .login-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      margin-top: 14px;
+    }
+    .login-box label:first-child { margin-top: 0; }
+    .login-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fafafa;
+    }
+    .btn-blue {
+      display: block;
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      background: #3b5bdb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .login-footer { text-align: center; font-size: 11px; color: #999; padding: 12px; }
+
+    /* HEADER */
+    .header {
+      background: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .header span { font-size: 15px; font-weight: 700; color: #1e293b; }
+    .header button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #3b5bdb;
+      font-family: inherit;
+      padding: 0;
+    }
+
+    /* DASHBOARD */
+    .dash-header {
+      background: #3b5bdb;
+      padding: 18px 16px;
+      color: white;
+    }
+    .dash-header p { font-size: 13px; opacity: 0.8; }
+    .dash-header h2 { font-size: 18px; font-weight: 700; margin-top: 2px; }
+    .dash-header small { font-size: 12px; opacity: 0.65; }
+
+    .cards-row {
+      display: flex;
+      gap: 8px;
+      padding: 14px 12px;
+    }
+    .card-sm {
+      flex: 1;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .card-sm .n { font-size: 24px; font-weight: 700; }
+    .card-sm .t { font-size: 10px; color: #888; margin-top: 2px; }
+    .amarelo { color: #f59e0b; }
+    .azul    { color: #3b5bdb; }
+    .verde   { color: #22c55e; }
+
+    .prog-box {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 0 12px;
+      padding: 12px 14px;
+    }
+    .prog-top { display: flex; justify-content: space-between; font-size: 12px; color: #555; margin-bottom: 8px; }
+    .prog-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; background: #22c55e; border-radius: 4px; }
+    .prog-sub { font-size: 11px; color: #999; margin-top: 6px; }
+
+    .list-title { font-size: 12px; font-weight: 700; color: #888; padding: 14px 14px 6px; text-transform: uppercase; }
+
+    .entrega {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 0 12px 10px;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .entrega-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .entrega-top strong { font-size: 13px; color: #1e293b; }
+    .entrega-top small { font-size: 12px; color: #888; display: block; margin-top: 2px; }
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .tag-p { background: #fff8e1; color: #d97706; }
+    .tag-r { background: #eff6ff; color: #3b5bdb; }
+    .tag-e { background: #f0fdf4; color: #16a34a; }
+    .entrega-info { margin-top: 8px; font-size: 11px; color: #888; display: flex; gap: 12px; }
+
+    /* DETALHE */
+    .det-header {
+      background: #3b5bdb;
+      padding: 16px;
+      color: white;
+    }
+    .det-header small { font-size: 12px; opacity: 0.75; }
+    .det-header h2 { font-size: 17px; font-weight: 700; margin-top: 2px; }
+
+    .det-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 12px;
+    }
+    .det-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .det-row:last-child { border-bottom: none; }
+    .det-row span:first-child { color: #888; }
+    .det-row span:last-child { font-weight: 600; color: #1e293b; }
+
+    .items-title { font-size: 12px; font-weight: 700; color: #888; padding: 4px 14px 6px; text-transform: uppercase; }
+    .item-linha {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .item-linha:last-child { border-bottom: none; }
+    .item-linha div small { color: #999; font-size: 11px; display: block; }
+
+    .acoes { padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+    .btn-green {
+      padding: 13px;
+      background: #22c55e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-danger {
+      padding: 12px;
+      background: white;
+      color: #ef4444;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* CONFIRMAÇÃO */
+    .ok-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+      gap: 10px;
+    }
+    .ok-icon { font-size: 56px; margin-bottom: 8px; }
+    .ok-screen h2 { font-size: 20px; font-weight: 700; color: #1e293b; }
+    .ok-screen p { font-size: 13px; color: #888; line-height: 1.6; }
+
+    /* NAV */
+    .nav {
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      padding: 8px 0 10px;
+    }
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: #999;
+      cursor: pointer;
+    }
+    .nav-btn span { font-size: 18px; }
+    .nav-btn.on { color: #3b5bdb; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- LOGIN -->
+  <div class="screen active" id="s0">
+    <div class="login-top">
+      <h1>📦 SmartStock</h1>
+      <p>Entregador</p>
+    </div>
+    <div class="login-box">
+      <label>E-mail</label>
+      <input type="email" value="joao@empresa.com" />
+      <label>Senha</label>
+      <input type="password" value="12345" />
+      <button class="btn-blue" onclick="go(1)">Entrar</button>
+    </div>
+    <p class="login-footer">SmartStock © 2026</p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="s1">
+    <div class="dash-header">
+      <p>Bom dia 👋</p>
+      <h2>João Silva</h2>
+      <small>13/05/2026</small>
+    </div>
+
+    <div class="cards-row">
+      <div class="card-sm">
+        <div class="n amarelo">3</div>
+        <div class="t">Pendentes</div>
+      </div>
+      <div class="card-sm">
+        <div class="n azul">1</div>
+        <div class="t">Em rota</div>
+      </div>
+      <div class="card-sm">
+        <div class="n verde">2</div>
+        <div class="t">Entregues</div>
+      </div>
+    </div>
+
+    <div class="prog-box">
+      <div class="prog-top">
+        <span>Progresso do dia</span>
+        <span><b>33%</b></span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:33%"></div></div>
+      <div class="prog-sub">2 de 6 entregas concluídas</div>
+    </div>
+
+    <div class="list-title">Entregas de hoje</div>
+
+    <div class="entrega" onclick="go(2)">
+      <div class="entrega-top">
+        <div>
+          <strong>#G7 — Mercado Bom Preço</strong>
+          <small>Carlos Souza · São Paulo</small>
+        </div>
+        <span class="tag tag-r">Em rota</span>
+      </div>
+      <div class="entrega-info">
+        <span>📍 São Paulo</span>
+        <span>📅 13/05</span>
+        <span>R$ 850,00</span>
+      </div>
+    </div>
+
+    <div class="entrega" onclick="go(2)">
+      <div class="entrega-top">
+        <div>
+          <strong>#G8 — Padaria Central</strong>
+          <small>Ana Lima · Campinas</small>
+        </div>
+        <span class="tag tag-p">Pendente</span>
+      </div>
+      <div class="entrega-info">
+        <span>📍 Campinas</span>
+        <span>📅 13/05</span>
+        <span>R$ 320,00</span>
+      </div>
+    </div>
+
+    <div class="entrega">
+      <div class="entrega-top">
+        <div>
+          <strong>#G5 — Hortifruti Verde</strong>
+          <small>Maria Costa · Guarulhos</small>
+        </div>
+        <span class="tag tag-e">Entregue</span>
+      </div>
+      <div class="entrega-info">
+        <span>📍 Guarulhos</span>
+        <span>📅 13/05</span>
+        <span>R$ 1.200,00</span>
+      </div>
+    </div>
+
+    <div class="nav" style="margin-top:auto">
+      <div class="nav-btn on"><span>🏠</span>Início</div>
+      <div class="nav-btn"><span>📦</span>Entregas</div>
+      <div class="nav-btn"><span>🗺️</span>Rota</div>
+      <div class="nav-btn"><span>👤</span>Perfil</div>
+    </div>
+  </div>
+
+  <!-- DETALHE -->
+  <div class="screen" id="s2">
+    <div class="header">
+      <button onclick="go(1)">←</button>
+      <span>Detalhe</span>
+      <div style="width:24px"></div>
+    </div>
+
+    <div class="det-header">
+      <small>Pedido #G7</small>
+      <h2>Mercado Bom Preço</h2>
+      <span class="tag tag-r" style="display:inline-block;margin-top:6px">Em rota</span>
+    </div>
+
+    <div class="det-card">
+      <div class="det-row"><span>Cliente</span><span>Carlos Souza</span></div>
+      <div class="det-row"><span>Cidade</span><span>São Paulo, SP</span></div>
+      <div class="det-row"><span>Data</span><span>13/05/2026</span></div>
+      <div class="det-row"><span>Total</span><span style="color:#3b5bdb">R$ 850,00</span></div>
+    </div>
+
+    <div class="det-card">
+      <div class="items-title">Itens do pedido</div>
+      <div class="item-linha">
+        <div>Farinha de Trigo <small>50 kg</small></div>
+        <span>R$ 400,00</span>
+      </div>
+      <div class="item-linha">
+        <div>Açúcar Cristal <small>30 kg</small></div>
+        <span>R$ 250,00</span>
+      </div>
+      <div class="item-linha">
+        <div>Sal Refinado <small>20 kg</small></div>
+        <span>R$ 200,00</span>
+      </div>
+    </div>
+
+    <div class="acoes">
+      <button class="btn-green" onclick="go(3)">✓ Confirmar entrega</button>
+      <button class="btn-danger">Cancelar entrega</button>
+    </div>
+  </div>
+
+  <!-- CONFIRMAÇÃO -->
+  <div class="screen" id="s3">
+    <div class="header">
+      <div style="width:24px"></div>
+      <span>SmartStock</span>
+      <div style="width:24px"></div>
+    </div>
+    <div class="ok-screen">
+      <div class="ok-icon">✅</div>
+      <h2>Entrega confirmada!</h2>
+      <p>Pedido <b>#G7</b> para<br/><b>Mercado Bom Preço</b><br/>foi entregue com sucesso.</p>
+      <button class="btn-blue" style="margin-top:20px;width:100%" onclick="go(1)">Voltar ao início</button>
+    </div>
+    <div class="nav">
+      <div class="nav-btn on"><span>🏠</span>Início</div>
+      <div class="nav-btn"><span>📦</span>Entregas</div>
+      <div class="nav-btn"><span>🗺️</span>Rota</div>
+      <div class="nav-btn"><span>👤</span>Perfil</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function go(n) {
+    document.querySelectorAll('.screen').forEach((s, i) => {
+      s.classList.toggle('active', i === n)
+    })
+  }
+</script>
+</body>
+</html>

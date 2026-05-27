@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartStock — Apresentação técnica (diagramas)</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0c0e14;
+      --surface: #141821;
+      --surface-2: #1a2030;
+      --border: #2d3548;
+      --text: #e8eaef;
+      --muted: #94a3b8;
+      --accent: #818cf8;
+      --accent-soft: rgba(129,140,248,.14);
+      --green: #34d399;
+      --green-soft: rgba(52,211,153,.12);
+      --amber: #fbbf24;
+      --amber-soft: rgba(251,191,36,.12);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 0.88em;
+      background: var(--surface-2);
+      padding: 0.12em 0.45em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .header {
+      text-align: center;
+      padding: 44px 24px 28px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+    }
+
+    .header .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 32px rgba(99,102,241,.25);
+    }
+
+    .header h1 {
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .header .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+
+    .tab-btn:hover {
+      background: var(--accent-soft);
+      color: var(--text);
+      border-color: rgba(129,140,248,.35);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0c0e14;
+      border-color: var(--accent);
+    }
+
+    .section {
+      display: none;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    .section.active { display: block; }
+
+    .section-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .section-lead {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 22px;
+      line-height: 1.7;
+    }
+
+    .narrative {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 22px;
+    }
+
+    .narrative h3 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .narrative p + p { margin-top: 12px; }
+
+    .narrative ul {
+      margin: 12px 0 0 1.15rem;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .narrative li + li { margin-top: 8px; }
+
+    .narrative strong { color: var(--text); }
+
+    .callout {
+      border-left: 3px solid var(--amber);
+      background: var(--amber-soft);
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 18px 0;
+      font-size: 14px;
+      color: #fde68a;
+    }
+
+    .callout code { background: rgba(0,0,0,.25); border-color: transparent; color: #fef3c7; }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .steps li {
+      position: relative;
+      padding-left: 2.6rem;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 16px;
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+
+    .diagram-card .mermaid svg { max-width: 100%; }
+
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .legend { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .legend-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+
+    .legend-item h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item h4 .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .legend-item h4 .dot.green { background: var(--green); }
+
+    .legend-item p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-purple { background: var(--accent-soft); color: var(--accent); }
+    .badge-green  { background: var(--green-soft);  color: var(--green);  }
+
+    .arch-layers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .arch-layer {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      text-align: left;
+    }
+
+    .arch-layer .layer-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .arch-layer h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .arch-layer p  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+    .flow-request {
+      margin-top: 20px;
+      padding: 18px;
+      background: var(--surface);
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .flow-request h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+
+    details.guide {
+      margin-top: 24px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    details.guide summary {
+      padding: 14px 18px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    details.guide summary::-webkit-details-marker { display: none; }
+
+    details.guide[open] summary {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .guide-body {
+      padding: 18px 20px 20px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .guide-body p + p { margin-top: 10px; }
+
+    .proto-intro {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .proto-intro strong { color: var(--text); }
+
+    .proto-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .proto-slide {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      scroll-margin-top: 88px;
+    }
+
+    .proto-slide-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .proto-num {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .proto-slide-head h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .proto-route {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .proto-route code {
+      font-size: 12px;
+    }
+
+    .proto-shot {
+      min-height: 140px;
+      margin: 16px 22px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(0,0,0,.15);
+    }
+
+    .proto-body {
+      padding: 0 22px 22px;
+    }
+
+    .proto-points {
+      margin: 0;
+      padding-left: 1.2rem;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .proto-points li + li { margin-top: 8px; }
+
+    .proto-say {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(129,140,248,.25);
+      font-size: 13px;
+      color: #c7d2fe;
+      line-height: 1.55;
+    }
+
+    .proto-say strong { color: #e0e7ff; }
+
+    .footer {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media print {
+      body { background: #fff; color: #111; font-size: 12px; }
+      .tabs { display: none; }
+      .section { display: block !important; page-break-inside: avoid; max-width: 100%; }
+      .narrative, .diagram-card, .legend-item, .arch-layer, .proto-slide, .proto-intro { background: #f8fafc; border-color: #e2e8f0; }
+      .proto-slide-head { background: #f1f5f9; }
+      .proto-shot { border-color: #cbd5e1; color: #475569; background: #fff; }
+      .proto-say { background: #eef2ff; color: #312e81; border-color: #c7d2fe; }
+      .proto-say strong { color: #1e1b4b; }
+      code { background: #e2e8f0; color: #0f172a; }
+      .proto-slide { page-break-inside: avoid; page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">S</div>
+  <h1>SmartStock</h1>
+  <p class="subtitle">Slides de telas (protótipos), diagrama de classes de domínio, arquitetura e fluxo — alinhado ao requisito da apresentação e ao código.</p>
+</div>
+
+<div class="tabs" role="tablist">
+  <button type="button" class="tab-btn active" data-tab="telas" role="tab" aria-selected="true">1. Telas do sistema</button>
+  <button type="button" class="tab-btn" data-tab="classes" role="tab" aria-selected="false">2. Diagrama de classes</button>
+  <button type="button" class="tab-btn" data-tab="arch" role="tab" aria-selected="false">3. Arquitetura</button>
+  <button type="button" class="tab-btn" data-tab="flow" role="tab" aria-selected="false">4. Fluxo de negócio</button>
+  <button type="button" class="tab-btn" data-tab="script" role="tab" aria-selected="false">5. Guia da fala</button>
+</div>
+
+<!-- ==================== TELAS / PROTOTIPOS ==================== -->
+<div id="tab-telas" class="section active" role="tabpanel">
+  <h2 class="section-title">Protótipos — principais telas do SmartStock</h2>
+  <p class="section-lead">
+    Atende ao item da apresentação: <strong>slides com as principais telas</strong>. Cada bloco abaixo funciona como um slide: use no vídeo com <strong>compartilhamento de tela</strong> no app rodando (<code>npm run dev</code> + API + banco) ou <strong>insira prints</strong> na área tracejada (substitua o <code>div.proto-shot</code> por <code>&lt;img src="..." alt="..." /&gt;</code> se quiser PDF fixo).
+  </p>
+
+  <div class="proto-intro">
+    <strong>Ordem sugerida na gravação:</strong> login → dashboard → cadastros → venda (novo pedido + lista) → estoque → entregas. Isso conta a história do processo sem saltos. <strong>URL base:</strong> <code>http://localhost:3000</code> (ajuste a porta se o Next usar outra).
+  </div>
+
+  <div class="proto-deck">
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 1 · Acesso</span>
+        <h3>Tela de login</h3>
+        <p class="proto-route">Rota: fluxo inicial do <code>ErpLayout</code> (antes de autenticar, mesma origem do app).</p>
+      </div>
+      <div class="proto-shot">Área para screenshot ou projeção ao vivo da tela de acesso ao sistema.</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Mostrar campos de e-mail/senha e o fato de ser <strong>demonstração acadêmica</strong> (sessão local).</li>
+          <li>Após entrar, o layout ERP (sidebar + cabeçalho) fica disponível.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “Aqui simulamos o portão de entrada ao painel. Na disciplina o foco é o fluxo de negócio; em produção substituiríamos por autenticação real no servidor.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 2 · Visão geral</span>
+        <h3>Dashboard</h3>
+        <p class="proto-route"><code>http://localhost:3000/</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: cards de KPIs (pedidos, pendentes, estoque, faturamento, totais).</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Dados vindos da API (<code>GET .../dashboard/summary</code>) — não são números fixos.</li>
+          <li>Atalhos para cadastros, vendas e estoque reforçam a ideia de <strong>mini-ERP integrado</strong>.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “O dashboard consolida o estado do negócio: é o primeiro lugar onde o gestor vê se há pedidos abertos e como está o estoque.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 3 · Cadastro mestre</span>
+        <h3>Clientes</h3>
+        <p class="proto-route"><code>http://localhost:3000/cadastros/clientes</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: listagem + formulário rápido de novo cliente.</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Entidade de domínio <code>Client</code> persistida via API.</li>
+          <li>Sem cliente cadastrado não há pedido coerente — <strong>pré-condição do caso de uso</strong>.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “Cliente é cadastro mestre: todo pedido referencia um registro aqui, como no mercado.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 4 · Cadastro mestre</span>
+        <h3>Produtos</h3>
+        <p class="proto-route"><code>http://localhost:3000/cadastros/produtos</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: tabela com estoque, preço e cadastro rápido.</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Reflete <code>Product</code>: código, unidade, <strong>estoque atual</strong>, preço.</li>
+          <li>Conecta diretamente ao módulo de pedidos e movimentações.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “O produto concentra o saldo que será consumido pela venda e registrado nas movimentações.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 5 · Venda</span>
+        <h3>Novo pedido / orçamento</h3>
+        <p class="proto-route"><code>http://localhost:3000/vendas/orcamentos</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: seleção de cliente, linhas de item, totais e botão salvar.</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Protótipo operacional: <code>POST /orders</code> dispara regra no <code>OrderService</code> (estoque + movimento + entrega).</li>
+          <li>É o <strong>momento-chave</strong> do vídeo técnico-funcional.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “Ao salvar, o back-end não grava só o pedido: baixa estoque, gera histórico de saída e abre a entrega — integração em uma transação.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 6 · Venda</span>
+        <h3>Lista de pedidos</h3>
+        <p class="proto-route"><code>http://localhost:3000/vendas/pedidos</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: pedidos com status (Orçamento, Pendente, Faturado, etc.).</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Acompanhamento do ciclo de vida do documento de venda.</li>
+          <li>Alteração de status persistida na API.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “Aqui o atendente acompanha o pipeline comercial até faturamento ou entrega.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 7 · Estoque</span>
+        <h3>Movimentações</h3>
+        <p class="proto-route"><code>http://localhost:3000/estoque/movimentacoes</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: resumo, lançamento manual e histórico com origem.</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Exibe <code>StockMovement</code> e o vínculo com produto.</li>
+          <li>Mostre linhas geradas automaticamente a partir de pedido vs. ajuste manual.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “Movimentação é o rastro de auditoria: dá para explicar cada mudança de saldo.”</p>
+      </div>
+    </article>
+
+    <article class="proto-slide">
+      <div class="proto-slide-head">
+        <span class="proto-num">Slide 8 · Logística</span>
+        <h3>Entregas</h3>
+        <p class="proto-route"><code>http://localhost:3000/entregas</code></p>
+      </div>
+      <div class="proto-shot">Screenshot: fila por status (pendente, em rota, entregue).</div>
+      <div class="proto-body">
+        <ul class="proto-points">
+          <li>Materializa o caso de uso “acompanhar entrega” ligado ao pedido.</li>
+          <li>Fecha o fluxo apresentado desde o dashboard.</li>
+        </ul>
+        <p class="proto-say"><strong>Fala sugerida:</strong> “A entrega nasce do pedido; a operação só muda status até concluir a rota.”</p>
+      </div>
+    </article>
+  </div>
+</div>
+
+<!-- ==================== DIAGRAMA DE CLASSES ==================== -->
+<div id="tab-classes" class="section" role="tabpanel" hidden>
+  <h2 class="section-title">Diagrama de classes de domínio</h2>
+  <p class="section-lead">
+    Atende ao item: <strong>diagrama de classes de domínio</strong>, com as <strong>principais classes da análise do sistema</strong> e <strong>como se relacionam</strong>. O desenho abaixo está alinhado às <strong>entidades JPA</strong> (<code>com.smartstock.entity</code>) — ou seja, ao que de fato persiste no PostgreSQL, não só ao esboço conceitual.
+  </p>
+
+  <div class="narrative">
+    <h3>O que dizer na apresentação (requisito da disciplina)</h3>
+    <p>
+      O trabalho pede o <strong>diagrama de classes de domínio</strong> e a explicação das <strong>principais classes da análise</strong> e dos <strong>relacionamentos</strong>. Use este slide após as telas: primeiro mostramos <em>como o usuário vê</em>, depois <em>como o sistema modela</em> o mesmo negócio por baixo.
+    </p>
+    <p>
+      <strong>Domínio</strong> é o vocabulário do negócio traduzido em classes. Aqui não estamos desenhando “telas”: estamos mostrando <strong>quais conceitos o sistema persiste</strong> e <strong>quem se relaciona com quem</strong>. Isso prova que o mini-ERP não é só interface: existe modelo de dados coerente atrás.
+    </p>
+    <p>
+      Observe três ideias centrais: <strong>cadastros mestres</strong> (cliente, produto, fornecedor, local), o <strong>agregado de venda</strong> (<code>Order</code> + <code>OrderItem</code>) e os <strong>efeitos colaterais auditáveis</strong> (<code>StockMovement</code> e <code>Delivery</code>).
+    </p>
+    <ul>
+      <li><strong>UUID</strong> como chave: adequado para APIs distribuídas e merge de dados; no código está em todas as entities.</li>
+      <li><strong>Valores monetários</strong> em <code>BigDecimal</code> no Java — evita erro de arredondamento de ponto flutuante em preço e total.</li>
+      <li><strong>OrderItem</strong> mantém <code>productId</code> (UUID), não um <code>@ManyToOne Product</code>: é um desenho pragmático; o produto continua sendo entidade independente.</li>
+      <li><strong>Supplier</strong> e <strong>StockLocation</strong> aparecem como cadastros à parte: no schema atual <strong>não há FK</strong> delas em <code>Product</strong> — o menu do ERP já antecipa módulos que podem evoluir para vínculo explícito depois.</li>
+    </ul>
+  </div>
+
+  <div class="callout">
+    <strong>Dica de banca:</strong> se perguntarem “cadastro X conversa com Y?”, responda com <strong>o que existe no banco hoje</strong> (FK / coluna) versus <strong>o que é roteiro de evolução</strong>. Isso é maturidade de arquiteto de software, não desculpa.
+  </div>
+
+  <div class="diagram-card">
+    <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class Client {
+        +UUID id
+        +String name
+        +String cpfCnpj
+        +String phone
+        +String email
+        +String city
+        +String status
+        +LocalDateTime createdAt
+    }
+
+    class Product {
+        +UUID id
+        +String name
+        +String type
+        +String code
+        +String ref
+        +Integer stock
+        +String unit
+        +BigDecimal price
+        +String status
+        +LocalDateTime createdAt
+    }
+
+    class Order {
+        +UUID id
+        +String number
+        +LocalDate date
+        +UUID clientId
+        +String status
+        +BigDecimal total
+        +LocalDateTime createdAt
+    }
+
+    class OrderItem {
+        +UUID id
+        +UUID productId
+        +Integer quantity
+        +BigDecimal unitPrice
+        +BigDecimal discount
+        +BigDecimal subtotal
+    }
+
+    class StockMovement {
+        +UUID id
+        +LocalDateTime date
+        +UUID productId
+        +String type
+        +Integer quantity
+        +String origin
+        +Integer stockAfter
+    }
+
+    class Delivery {
+        +UUID id
+        +UUID orderId
+        +UUID clientId
+        +String city
+        +String status
+        +LocalDate scheduledDate
+        +LocalDateTime createdAt
+    }
+
+    class Supplier {
+        +UUID id
+        +String name
+        +String cpfCnpj
+        +String phone
+        +String email
+        +String city
+        +String status
+        +LocalDateTime createdAt
+    }
+
+    class StockLocation {
+        +UUID id
+        +String name
+        +String address
+        +Integer products
+        +String status
+        +LocalDateTime createdAt
+    }
+
+    Order "n" --> "1" Client : clientId
+    Order "1" *-- "1..*" OrderItem
+    OrderItem "n" --> "1" Product : productId
+    StockMovement "n" --> "1" Product : productId
+    Delivery --> Order : orderId
+    Delivery --> Client : clientId
+    </pre>
+  </div>
+
+  <p class="section-lead" style="margin-top: 18px; font-size: 13px;">
+    <strong>Legenda técnica:</strong> <code>Order</code> ↔ <code>OrderItem</code> = <code>@OneToMany</code> / <code>@ManyToOne</code> com cascade no agregado. <code>Supplier</code> e <code>StockLocation</code> existem no banco mas <strong>não possuem FK</strong> para <code>Product</code> no modelo atual — por isso sem linhas.
+  </p>
+
+  <p class="section-lead" style="margin-bottom: 14px;">Cartões rápidos — use como legenda ao apontar no diagrama:</p>
+
+  <div class="legend">
+    <div class="legend-item">
+      <h4><span class="dot"></span>Client <span class="badge badge-purple">Entity</span></h4>
+      <p>Quem compra. CPF/CNPJ único. O pedido guarda só <code>clientId</code> — desacoplamento: dados do cliente podem ser consultados sem acoplar objeto grafado em todo lugar.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot"></span>Product <span class="badge badge-purple">Entity</span></h4>
+      <p>SKU comercial + <code>stock</code> atual. Movimentações e itens de pedido sempre apontam para o mesmo <code>id</code>; o saldo físico “mora” aqui.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot"></span>Order <span class="badge badge-green">Agregado</span></h4>
+      <p>Cabeçalho da venda: número legível (<code>G1</code>…), status de ciclo de vida, total. Itens são filhos com cascade no JPA — apagar pedido remove linhas órfãs.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot green"></span>OrderItem <span class="badge badge-purple">Entity</span></h4>
+      <p>Linha concreta: quantidade, preço na hora da venda, desconto, subtotal. Snapshot parcial do preço — histórico não quebra se o produto mudar de preço depois.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot green"></span>StockMovement <span class="badge badge-green">Auditoria</span></h4>
+      <p>Cada entrada/saída fica registrada com <code>origin</code> (ex.: “Pedido #G3”) e <code>stockAfter</code>. Isso explica “por que o estoque está X” sem reprocessar todos os pedidos.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot green"></span>Delivery <span class="badge badge-green">Logística</span></h4>
+      <p>Ponte entre venda e entrega física: cidade, data programada, status operacional. Liga <code>orderId</code> e <code>clientId</code> para montar a fila de rotas na UI.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot"></span>Supplier / StockLocation</h4>
+      <p>Cadastros de apoio ao ERP “completo” da navegação. Úteis na demo de telas; evolução natural é FK opcional (ex.: produto ← fornecedor padrão).</p>
+    </div>
+  </div>
+
+  <details class="guide">
+    <summary>Sequência sugerida ao explicar o diagrama (2–3 min)</summary>
+    <div class="guide-body">
+      <ol class="steps">
+        <li>Mostre <code>Client</code> e <code>Product</code> como base — “sem isso não existe operação”.</li>
+        <li>Centralize em <code>Order</code>: “aqui nasce o documento de venda”; abra <code>OrderItem</code> como composição.</li>
+        <li>Trace o arco de estoque: pedido → <code>StockMovement</code> + atualização de <code>Product.stock</code> (no serviço, transacional).</li>
+        <li>Feche com <code>Delivery</code>: mesmo pedido, outro subdomínio — separação de conceitos entre financeiro/comercial e logística.</li>
+      </ol>
+    </div>
+  </details>
+</div>
+
+<!-- ==================== ARQUITETURA ==================== -->
+<div id="tab-arch" class="section" role="tabpanel" hidden>
+  <h2 class="section-title">Arquitetura em camadas</h2>
+  <p class="section-lead">
+    <strong>SPA no navegador + API REST + banco relacional:</strong> o Next.js cuida de interface e navegação; o Spring Boot expõe recursos HTTP e executa regras e transações; o PostgreSQL persiste o modelo de domínio. O browser <strong>nunca</strong> abre conexão JDBC — só <strong>JSON via HTTP</strong> (<code>lib/api.ts</code> → <code>localhost:8081/api</code>).
+  </p>
+
+  <div class="narrative">
+    <h3>Visão de arquiteto</h3>
+    <p>
+      Separação em camadas reduz acoplamento: amanhã você pode trocar o front (ou publicar um app mobile) consumindo a <strong>mesma API</strong>. A lógica que não pode ser burlada pelo cliente — validar pedido, baixar estoque, gerar entrega — fica no servidor, idealmente em métodos anotados com <code>@Transactional</code> para garantir <strong>consistência</strong> (tudo confirma ou tudo desfaz).
+    </p>
+    <p>
+      No backend, o fluxo típico é: <strong>Controller</strong> (mapeia verbo e URL para um caso de uso) → <strong>Service</strong> (orquestra repositórios e regras) → <strong>Repository</strong> (Spring Data JPA) → <strong>PostgreSQL</strong>. No front, páginas em <code>app/</code> e componentes por módulo chamam funções tipadas que encapsulam <code>fetch</code>.
+    </p>
+    <ul>
+      <li><strong>Front:</strong> apresentação, estado de tela, validação só para UX (campos obrigatórios, máscaras).</li>
+      <li><strong>API:</strong> contrato estável (recursos como <code>/clients</code>, <code>/orders</code>); cabeçalhos e status HTTP semânticos.</li>
+      <li><strong>Persistência:</strong> entidades JPA refletem tabelas; em dev, <code>ddl-auto: update</code>; em produção madura, migrações versionadas.</li>
+    </ul>
+  </div>
+
+  <div class="callout">
+    Base da API: variável <code>NEXT_PUBLIC_API_URL</code> (padrão <code>http://localhost:8081/api</code>). Em deploy, aponta para o host real — o código do front permanece o mesmo.
+  </div>
+
+  <div class="diagram-card">
+    <pre class="mermaid">
+flowchart TB
+    subgraph FE["Camada frontend"]
+        direction TB
+        UI["Telas e layout ERP"]
+        PAGES["Rotas Next.js"]
+        API_CLIENT["Cliente HTTP lib api.ts"]
+        UI --> PAGES
+        PAGES --> API_CLIENT
+    end
+
+    subgraph BE["Camada backend Spring Boot"]
+        direction TB
+        CTRL["Controllers REST"]
+        SVC["Services e regras"]
+        REPO["Spring Data JPA"]
+        CTRL --> SVC
+        SVC --> REPO
+    end
+
+    subgraph DB["Banco de dados"]
+        PG[(PostgreSQL smartjava)]
+    end
+
+    API_CLIENT -->|"HTTP JSON porta 8081"| CTRL
+    REPO --> PG
+
+    style FE fill:#1e1b4b,stroke:#818cf8,color:#e8eaef
+    style BE fill:#0f2918,stroke:#34d399,color:#e8eaef
+    style DB fill:#2a1810,stroke:#fbbf24,color:#e8eaef
+    </pre>
+  </div>
+
+  <div class="arch-layers">
+    <div class="arch-layer">
+      <div class="layer-num">1</div>
+      <h4>Apresentação</h4>
+      <p>Componentes React, Tailwind, layout ERP. Responsável por formulários, tabelas, feedback visual — não por invariantes críticas.</p>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-num">2</div>
+      <h4>Contrato HTTP</h4>
+      <p><code>api.ts</code> documenta o contrato no front: se o back mudar o JSON, o TypeScript acusa na compilação.</p>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-num">3</div>
+      <h4>API REST</h4>
+      <p>Verbos e recursos previsíveis. Facilita testar com Postman e evoluir para autenticação (JWT, OAuth2) sem redesenhar domínio.</p>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-num">4</div>
+      <h4>Domínio + transação</h4>
+      <p>Ex.: criar pedido = N movimentações + 1 entrega + atualização de estoque — tudo ou nada dentro da mesma transação.</p>
+    </div>
+    <div class="arch-layer">
+      <div class="layer-num">5</div>
+      <h4>Dados</h4>
+      <p>Hibernate mapeia entities para tabelas. Em dev, <code>ddl-auto: update</code>; em produção, migrações versionadas (Flyway/Liquibase) seriam o passo maduro.</p>
+    </div>
+  </div>
+
+  <div class="flow-request">
+    <h4>Exemplo de fala — um request ponta a ponta</h4>
+    <p>
+      “Quando o usuário salva um pedido, o React chama <code>POST /api/orders</code>. O <code>OrderController</code> delega ao <code>OrderService</code>, que em uma transação valida cliente e itens, persiste o pedido, grava as saídas em <code>stock_movements</code>, atualiza <code>products.stock</code> e insere a linha em <code>deliveries</code>. A resposta JSON repopula a lista na tela. Ou deu certo em conjunto, ou o banco desfaz — é isso que significa transação.”
+    </p>
+  </div>
+
+  <details class="guide">
+    <summary>Login “fake” no vídeo — como explicar sem parecer amador</summary>
+    <div class="guide-body">
+      <p>
+        O <code>ErpLayout</code> hoje só exige sessão em <code>sessionStorage</code> para simular portão de entrada. Na defesa, diga com clareza: <strong>é demonstração acadêmica</strong>; o desenho correto de produção seria autenticação no servidor, tokens com expiração e autorização por perfil. Mostrar que vocês <strong>sabem a diferença</strong> vale mais que esconder o mock.
+      </p>
+    </div>
+  </details>
+</div>
+
+<!-- ==================== FLUXO DE NEGOCIO ==================== -->
+<div id="tab-flow" class="section" role="tabpanel" hidden>
+  <h2 class="section-title">Fluxo de negócio integrado</h2>
+  <p class="section-lead">
+    O diagrama abaixo é a <strong>história que o sistema conta</strong>: do cadastro ao painel. O ponto crítico é que <strong>criar pedido não é só inserir uma linha</strong> — dispara efeitos em estoque e logística, implementados no serviço de domínio.
+  </p>
+
+  <div class="narrative">
+    <h3>Leitura para a banca</h3>
+    <p>
+      Em ERP real, “pedido” é um <strong>evento de negócio</strong>. O SmartStock modela isso de forma didática: ao confirmar a venda, o estoque precisa refletir a saída física e a entrega precisa aparecer na fila do entregador — mesmo que a UI seja simplificada.
+    </p>
+    <p>
+      O retângulo verde “pedido salvo” marca o <strong>commit conceitual</strong> do documento; laranja e ciano mostram <strong>efeitos colaterais obrigatórios</strong> desse mesmo passo no código (<code>OrderService.create</code>).
+    </p>
+  </div>
+
+  <div class="diagram-card">
+    <pre class="mermaid">
+flowchart LR
+    A["Cadastro:\nCliente"] --> B["Cadastro:\nProduto"]
+    B --> C["Montar pedido\ncliente + itens"]
+    C --> D{"Estoque\nsuficiente?"}
+    D -->|Não| F["Ajustar quantidades\nou itens"]
+    F --> C
+    D -->|Sim| E["Persistir Order\n+ OrderItems"]
+    E --> G["StockMovement\nSaída por item"]
+    G --> H["Atualizar\nProduct.stock"]
+    H --> I["Criar Delivery\nstatus Pendente"]
+    I --> J["Operação:\nPendente → Em rota → Entregue"]
+    J --> K["Dashboard com KPIs"]
+
+    style A fill:#6366f1,stroke:#818cf8,color:#fff
+    style B fill:#6366f1,stroke:#818cf8,color:#fff
+    style C fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    style E fill:#059669,stroke:#34d399,color:#fff
+    style G fill:#d97706,stroke:#fbbf24,color:#fff
+    style H fill:#d97706,stroke:#fbbf24,color:#fff
+    style I fill:#0891b2,stroke:#22d3ee,color:#fff
+    style J fill:#0891b2,stroke:#22d3ee,color:#fff
+    style K fill:#047857,stroke:#6ee7b7,color:#fff
+    </pre>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <h4><span class="dot"></span>Pré-condições</h4>
+      <p>Cliente e produto existentes. Pedido referencia IDs válidos — o serviço responde 404 se algo não existir.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot"></span>Decisão de estoque</h4>
+      <p>Hoje o serviço ajusta com <code>Math.max(0, stock - qtd)</code>; na apresentação, mencionem se pretendem evoluir para <strong>bloquear venda</strong> sem estoque — regra de produto, não detalhe de framework.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot green"></span>Uma transação</h4>
+      <p>Pedido + movimentações + entrega devem ser vistos como <strong>pacote atômico</strong>. Se o banco falhar no meio, nada fica “pela metade” — conceito ACID.</p>
+    </div>
+    <div class="legend-item">
+      <h4><span class="dot green"></span>Pós-venda</h4>
+      <p>Entrega e dashboard são leituras diferentes do mesmo dado consolidado: logística atualiza status; o painel agrega contagens e receita.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GUIA DA FALA ==================== -->
+<div id="tab-script" class="section" role="tabpanel" hidden>
+  <h2 class="section-title">Guia da fala (teleprompter)</h2>
+  <p class="section-lead">
+    Texto para ler ou adaptar no vídeo. Ajuste pronomes (“eu / nós”) conforme quem estiver falando.
+  </p>
+
+  <div class="narrative">
+    <h3>Aba 1 — Telas / protótipos (~3 min)</h3>
+    <p>
+      “Vamos percorrer as <strong>principais telas do protótipo</strong>: login, dashboard, cadastro de clientes e produtos, criação de pedido, lista de pedidos, movimentações de estoque e entregas. A ordem segue o <strong>fluxo de uso</strong> de um mini-ERP, do acesso ao encerramento logístico.”
+    </p>
+    <p>
+      “Cada tela consome a <strong>API REST</strong>; no vídeo vale mostrar um pedido sendo salvo e, em seguida, o mesmo impacto aparecendo em estoque e entregas.”
+    </p>
+  </div>
+
+  <div class="narrative">
+    <h3>Aba 2 — Diagrama de classes (~2,5 min)</h3>
+    <p>
+      “Este é o <strong>modelo de domínio</strong> do SmartStock, desenhado a partir das classes que o Hibernate persiste no PostgreSQL. Em vez de começar pela tela, a gente mostra <strong>quais conceitos o sistema realmente guarda</strong>.”
+    </p>
+    <p>
+      “Temos cadastros mestres: <strong>cliente</strong> e <strong>produto</strong>. O <strong>pedido</strong> é o agregado central: ele tem cabeçalho e uma lista de <strong>itens</strong>. Cada item aponta para um produto e guarda quantidade e valores na hora da venda — isso é importante para <strong>histórico</strong>: se o preço do produto mudar amanhã, o pedido antigo continua correto.”
+    </p>
+    <p>
+      “Quando a venda impacta o físico, não basta mudar um número: a gente grava <strong>movimentação de estoque</strong> com origem e saldo depois do movimento. Assim dá para auditar. Em paralelo, nasce uma <strong>entrega</strong> ligada ao pedido e ao cliente, que a tela de rotas atualiza até ‘entregue’.”
+    </p>
+    <p>
+      “<strong>Fornecedor</strong> e <strong>local de estoque</strong> estão no mesmo desenho porque o menu do ERP já prevê esses cadastros; no banco atual eles são <strong>independentes do produto</strong> — deixamos explícito para a banca que não estamos inventar relacionamento que não existe no código.”
+    </p>
+  </div>
+
+  <div class="narrative">
+    <h3>Aba 3 — Arquitetura (~2 min)</h3>
+    <p>
+      “A arquitetura é <strong>cliente-servidor em três blocos</strong>: Next.js no navegador, Spring Boot expondo REST na porta 8081, e PostgreSQL. O front não fala com o banco direto — só com a API. Isso separa <strong>experiência do usuário</strong> de <strong>regra de negócio e transação</strong>.”
+    </p>
+    <p>
+      “No Java, seguimos o encadeamento clássico: <strong>controller</strong> recebe JSON, <strong>service</strong> executa a operação com transação, <strong>repository</strong> persiste. Um exemplo forte é criar pedido: em um único fluxo transacional atualizamos estoque, gravamos movimentos e criamos a entrega. Se algo falhar, o banco desfaz — conceito de <strong>atomicidade</strong>.”
+    </p>
+    <p>
+      “No TypeScript, o arquivo <code>api.ts</code> concentra as chamadas HTTP tipadas — é o nosso <strong>contrato documentado</strong> do lado do cliente.”
+    </p>
+  </div>
+
+  <div class="narrative">
+    <h3>Aba 4 — Fluxo de negócio (~1,5 min)</h3>
+    <p>
+      “O fluxo começa nos cadastros e chega ao pedido. O sistema valida se há estoque; ao persistir, dispara automaticamente as saídas e a fila de entregas. Por fim, o dashboard consolida indicadores a partir desses mesmos dados — ou seja, <strong>uma única fonte de verdade</strong> no PostgreSQL, lida pela API e exibida no React.”
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  SmartStock — Rafael Braga · Vinicius Costa · Willy Henrique Verissimo de Souza — ADS III
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "dark",
+    themeVariables: {
+      primaryColor: "#818cf8",
+      primaryTextColor: "#e8eaef",
+      primaryBorderColor: "#6366f1",
+      lineColor: "#64748b",
+      secondaryColor: "#141821",
+      tertiaryColor: "#1a2030",
+      fontFamily: "Segoe UI, system-ui, sans-serif",
+      fontSize: "13px",
+      classText: "#e8eaef",
+    },
+    classDiagram: { curve: "basis" },
+    flowchart: { curve: "basis", padding: 16 },
+  });
+
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("data-tab");
+      document.querySelectorAll(".tab-btn").forEach(function (b) {
+        b.classList.toggle("active", b === btn);
+        b.setAttribute("aria-selected", b === btn ? "true" : "false");
+      });
+      document.querySelectorAll(".section").forEach(function (sec) {
+        var on = sec.id === "tab-" + id;
+        sec.classList.toggle("active", on);
+        sec.hidden = !on;
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Copie para application-local.yml (gitignored) e ative: SPRING_PROFILES_ACTIVE=dev,local
+#
+# Exemplos do que costuma ir aqui (máquina do desenvolvedor):
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    password: sua_senha_aqui
+
+# app:
+#   cors:
+#     allowed-origins:
+#       - http://localhost:3000
+#       - http://192.168.1.10:3000

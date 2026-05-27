@@ -17,20 +17,24 @@ import { Badge } from "@/components/ui/badge"
 import {
   addStockMovement,
   listProducts,
+  listStockLocations,
   listStockMovements,
   type Product,
+  type StockLocation,
   type StockMovement,
 } from "@/lib/api"
 
 interface NewMovementFormState {
-  productId: string
+  productId: number | null
+  locationId: number | null
   type: "Entrada" | "Saida"
   quantity: string
   origin: string
 }
 
 const emptyForm: NewMovementFormState = {
-  productId: "",
+  productId: null,
+  locationId: null,
   type: "Entrada",
   quantity: "0",
   origin: "",
@@ -40,14 +44,20 @@ export function StockMovementsContent() {
   const [search, setSearch] = useState("")
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [locations, setLocations] = useState<StockLocation[]>([])
   const [form, setForm] = useState<NewMovementFormState>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     void (async () => {
-      const [movementsData, productsData] = await Promise.all([listStockMovements(), listProducts()])
+      const [movementsData, productsData, locationsData] = await Promise.all([
+        listStockMovements(),
+        listProducts(),
+        listStockLocations(),
+      ])
       setMovements(movementsData)
       setProducts(productsData)
+      setLocations(locationsData)
     })()
   }, [])
 
@@ -86,12 +96,13 @@ export function StockMovementsContent() {
     [movements]
   )
 
-  const handleFormChange = (field: keyof NewMovementFormState, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value as any }))
+  const handleFormChange = (field: keyof NewMovementFormState, value: string | number | null) => {
+    setForm((prev) => ({ ...prev, [field]: value as never }))
   }
 
   const canSave =
-    form.productId !== "" &&
+    form.productId !== null &&
+    form.locationId !== null &&
     Number(form.quantity.replace(",", ".")) > 0 &&
     !isSaving
 
@@ -100,11 +111,15 @@ export function StockMovementsContent() {
     setIsSaving(true)
     void (async () => {
       const qty = Number(form.quantity.replace(",", "."))
+      const selectedLocation = locations.find((l) => l.id === form.locationId)
+      const locationLabel = selectedLocation?.name ?? "Local nao informado"
       const created = await addStockMovement({
         productId: form.productId,
         type: form.type,
         quantity: Number.isFinite(qty) ? qty : 0,
-        origin: form.origin.trim() || (form.type === "Entrada" ? "Ajuste manual de entrada" : "Ajuste manual de saida"),
+        origin: form.origin.trim()
+          ? `${locationLabel} - ${form.origin.trim()}`
+          : `${locationLabel} - ${form.type === "Entrada" ? "Ajuste manual de entrada" : "Ajuste manual de saida"}`,
       })
       setMovements((prev) => [created, ...prev])
       setProducts(await listProducts())
@@ -189,8 +204,8 @@ export function StockMovementsContent() {
           <CardContent className="flex flex-col gap-2">
             <select
               className="h-9 rounded-md border border-input bg-card px-3 text-sm"
-              value={form.productId}
-              onChange={(e) => handleFormChange("productId", e.target.value)}
+              value={form.productId?.toString() ?? ""}
+              onChange={(e) => handleFormChange("productId", e.target.value ? Number(e.target.value) : null)}
             >
               <option value="">Selecione um produto</option>
               {products.map((p) => (
@@ -199,7 +214,19 @@ export function StockMovementsContent() {
                 </option>
               ))}
             </select>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
+              <select
+                className="h-9 rounded-md border border-input bg-card px-3 text-sm"
+                value={form.locationId?.toString() ?? ""}
+                onChange={(e) => handleFormChange("locationId", e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">Local de estoque</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
               <select
                 className="h-9 rounded-md border border-input bg-card px-3 text-sm"
                 value={form.type}

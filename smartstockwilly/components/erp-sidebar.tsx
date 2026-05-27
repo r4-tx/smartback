@@ -41,7 +41,6 @@ const menuItems = [
   {
     title: "Cadastros",
     icon: Users,
-    badge: "Novo",
     children: [
       { title: "Produtos", href: "/cadastros/produtos" },
       { title: "Clientes", href: "/cadastros/clientes" },
@@ -78,13 +77,11 @@ const menuItems = [
   {
     title: "Relatorios",
     icon: BarChart3,
-    badge: "Novo",
     href: "/relatorios",
   },
   {
     title: "Financeiro",
     icon: Wallet,
-    badge: "Novo",
     children: [
       { title: "Contas", href: "/financeiro" },
       { title: "Boletos", href: "/financeiro/boletos" },

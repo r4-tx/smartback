@@ -1,31 +1,29 @@
 package com.smartstock.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "stock_locations")
-public class StockLocation {
+@Table(name = "app_users")
+public class AppUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String address;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    @Column(nullable = false)
-    private Integer products;
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Column(nullable = false)
     private String status;
@@ -35,6 +33,9 @@ public class StockLocation {
 
     @PrePersist
     void prePersist() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
         if (status == null) {
             status = "Ativo";
         }
@@ -43,11 +44,11 @@ public class StockLocation {
         }
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -59,20 +60,20 @@ public class StockLocation {
         this.name = name;
     }
 
-    public String getAddress() {
-        return address;
+    public String getEmail() {
+        return email;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public Integer getProducts() {
-        return products;
+    public String getPassword() {
+        return password;
     }
 
-    public void setProducts(Integer products) {
-        this.products = products;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getStatus() {

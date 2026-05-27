@@ -7,25 +7,35 @@ import { ErpHeader } from "@/components/erp-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { getSession, setSession, type UserSession } from "@/lib/api"
+import { getSession, login, setSession, type UserSession } from "@/lib/api"
 
 function LoginScreen() {
   const [email, setEmail] = useState("admin@smartstock.com")
-  const [password, setPassword] = useState("123")
+  const [password, setPassword] = useState("123456")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const canLogin = email.trim().length > 0 && password.trim().length > 0
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!canLogin) return
+    setError(null)
     setIsLoading(true)
-    const session: UserSession = {
-      isLoggedIn: true,
-      userName: "Admin Smartstock",
+    try {
+      const auth = await login({ email: email.trim(), password })
+      const session: UserSession = {
+        isLoggedIn: true,
+        userName: auth.userName,
+        email: auth.email,
+      }
+      await setSession(session)
+      // simples recarregamento para forcar leitura da sessao
+      window.location.reload()
+    } catch {
+      setError("E-mail ou senha invalidos.")
+    } finally {
+      setIsLoading(false)
     }
-    setSession(session)
-    // simples recarregamento para forcar leitura da sessao
-    window.location.reload()
   }
 
   return (
@@ -55,8 +65,9 @@ function LoginScreen() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Para demonstracao, voce pode usar qualquer combinacao de e-mail e senha.
+            Login do sistema: use o usuario cadastrado no banco.
           </p>
+          {error && <p className="text-xs text-red-500">{error}</p>}
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleLogin}

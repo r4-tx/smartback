@@ -1,7 +1,6 @@
 package com.smartstock.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import com.smartstock.dto.request.CreateStockLocationRequest;
 import com.smartstock.entity.StockLocation;
@@ -34,7 +33,7 @@ public class StockLocationController {
     }
 
     @GetMapping("/{id}")
-    public StockLocation get(@PathVariable UUID id) {
+    public StockLocation get(@PathVariable Long id) {
         return stockLocationService.get(id);
     }
 
@@ -45,13 +44,13 @@ public class StockLocationController {
     }
 
     @PutMapping("/{id}")
-    public StockLocation update(@PathVariable UUID id, @Valid @RequestBody CreateStockLocationRequest request) {
+    public StockLocation update(@PathVariable Long id, @Valid @RequestBody CreateStockLocationRequest request) {
         return stockLocationService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public void delete(@PathVariable Long id) {
         stockLocationService.delete(id);
     }
 }

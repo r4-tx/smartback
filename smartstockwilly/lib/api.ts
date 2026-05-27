@@ -14,13 +14,14 @@ export interface Client {
 export type ProductStatus = "Ativo" | "Inativo"
 
 export interface Product {
-  id: string
+  id: number
   name: string
   type: string
   code: string
   ref: string
   stock: number
   unit: string
+  stockLocationId?: number | null
   price: number
   status: ProductStatus
   createdAt: string
@@ -30,7 +31,7 @@ export type OrderStatus = "Orcamento" | "Pendente" | "Faturado" | "Cancelado" | 
 
 export interface OrderItem {
   id: string
-  productId: string
+  productId: number
   quantity: number
   unitPrice: number
   discount: number
@@ -63,7 +64,7 @@ export type StockMovementType = "Entrada" | "Saida"
 export interface StockMovement {
   id: string
   date: string
-  productId: string
+  productId: number
   type: StockMovementType
   quantity: number
   origin: string
@@ -73,6 +74,17 @@ export interface StockMovement {
 export interface UserSession {
   isLoggedIn: boolean
   userName: string
+  email?: string
+}
+
+export interface LoginInput {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  userName: string
+  email: string
 }
 
 export interface NewClientInput {
@@ -90,6 +102,7 @@ export interface NewProductInput {
   ref: string
   stock: number
   unit: string
+  stockLocationId?: number | null
   price: number
 }
 
@@ -113,7 +126,7 @@ export interface NewSupplierInput {
 }
 
 export interface StockLocation {
-  id: string
+  id: number
   name: string
   address: string
   products: number
@@ -128,14 +141,14 @@ export interface NewStockLocationInput {
 }
 
 export interface NewStockMovementInput {
-  productId: string
+  productId: number
   type: StockMovementType
   quantity: number
   origin: string
 }
 
 export interface NewOrderItemInput {
-  productId: string
+  productId: number
   quantity: number
   unitPrice: number
   discount: number
@@ -185,6 +198,13 @@ export async function setSession(session: UserSession | null) {
   window.sessionStorage.setItem("SMARTSTOCK_SESSION", JSON.stringify(session))
 }
 
+export async function login(input: LoginInput): Promise<LoginResponse> {
+  return request<LoginResponse>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(input),
+  })
+}
+
 export async function listClients(): Promise<Client[]> {
   return request<Client[]>("/clients")
 }
@@ -204,6 +224,23 @@ export async function addProduct(input: NewProductInput): Promise<Product> {
   return request<Product>("/products", {
     method: "POST",
     body: JSON.stringify(input),
+  })
+}
+
+export async function getProduct(productId: number): Promise<Product> {
+  return request<Product>(`/products/${productId}`)
+}
+
+export async function updateProduct(productId: number, input: NewProductInput): Promise<Product> {
+  return request<Product>(`/products/${productId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  })
+}
+
+export async function deleteProduct(productId: number): Promise<void> {
+  return request<void>(`/products/${productId}`, {
+    method: "DELETE",
   })
 }
 

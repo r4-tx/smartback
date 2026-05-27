@@ -1,7 +1,6 @@
 package com.smartstock.config;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import com.smartstock.entity.StockLocation;
 import com.smartstock.repository.StockLocationRepository;
@@ -20,7 +19,6 @@ public class StockLocationSeeder {
             }
 
             StockLocation l1 = new StockLocation();
-            l1.setId(UUID.fromString("88888888-8888-8888-8888-888888888888"));
             l1.setName("Deposito Principal");
             l1.setAddress("Rua das Flores, 100 - Centro");
             l1.setProducts(28450);
@@ -29,7 +27,6 @@ public class StockLocationSeeder {
             stockLocationRepository.save(l1);
 
             StockLocation l2 = new StockLocation();
-            l2.setId(UUID.fromString("99999999-9999-9999-9999-999999999999"));
             l2.setName("Loja Fisica");
             l2.setAddress("Av. Brasil, 500 - Comercial");
             l2.setProducts(8760);
@@ -38,7 +35,6 @@ public class StockLocationSeeder {
             stockLocationRepository.save(l2);
 
             StockLocation l3 = new StockLocation();
-            l3.setId(UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
             l3.setName("Estoque Reserva");
             l3.setAddress("Rua dos Industriais, 30");
             l3.setProducts(1100);

@@ -3,3 +3,7 @@ target/
 *.iml
 .env
 .env.*
+*.ps1.user
+
+# Sobrescritas locais Spring Boot (senhas, URL do banco da sua maquina)
+**/application-local.yml

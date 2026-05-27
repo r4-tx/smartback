@@ -25,7 +25,7 @@ import {
 
 interface ProductLine {
   id: number
-  productId: string
+  productId: number | null
   name: string
   quantity: number
   unitPrice: number
@@ -40,7 +40,7 @@ export function SalesOrderContent() {
   const [clients, setClients] = useState<Client[]>([])
   const [productsCatalog, setProductsCatalog] = useState<Product[]>([])
   const [products, setProducts] = useState<ProductLine[]>([
-    { id: 1, productId: "", name: "", quantity: 0, unitPrice: 0, discount: 0, subtotal: 0 },
+    { id: 1, productId: null, name: "", quantity: 0, unitPrice: 0, discount: 0, subtotal: 0 },
   ])
   const [saving, setSaving] = useState(false)
   const [createdOrder, setCreatedOrder] = useState<Order | null>(null)
@@ -59,7 +59,7 @@ export function SalesOrderContent() {
       ...products,
       {
         id: products.length + 1,
-        productId: "",
+        productId: null,
         name: "",
         quantity: 0,
         unitPrice: 0,
@@ -100,7 +100,7 @@ export function SalesOrderContent() {
         line.id === lineId
           ? {
               ...line,
-              productId: matched?.id ?? "",
+              productId: matched?.id ?? null,
               name: matched ? matched.name : value,
               unitPrice: matched?.price ?? line.unitPrice,
             }
@@ -124,7 +124,7 @@ export function SalesOrderContent() {
 
   const canSave =
     clientId !== "" &&
-    products.some((p) => p.productId && p.quantity > 0 && p.unitPrice > 0) &&
+    products.some((p) => p.productId !== null && p.quantity > 0 && p.unitPrice > 0) &&
     !saving
 
   const handleSaveOrder = () => {
@@ -132,7 +132,7 @@ export function SalesOrderContent() {
       setError("Selecione um cliente antes de salvar o pedido.")
       return
     }
-    if (!products.some((p) => p.productId && p.quantity > 0 && p.unitPrice > 0)) {
+    if (!products.some((p) => p.productId !== null && p.quantity > 0 && p.unitPrice > 0)) {
       setError("Adicione pelo menos um produto valido ao pedido.")
       return
     }
@@ -142,9 +142,9 @@ export function SalesOrderContent() {
     void (async () => {
       try {
         const items: NewOrderItemInput[] = products
-          .filter((p) => p.productId && p.quantity > 0 && p.unitPrice > 0)
+          .filter((p) => p.productId !== null && p.quantity > 0 && p.unitPrice > 0)
           .map((p) => ({
-            productId: p.productId,
+            productId: p.productId as number,
             quantity: p.quantity,
             unitPrice: p.unitPrice,
             discount: p.discount,
@@ -156,7 +156,7 @@ export function SalesOrderContent() {
         })
         setCreatedOrder(order)
         setProducts([
-          { id: 1, productId: "", name: "", quantity: 0, unitPrice: 0, discount: 0, subtotal: 0 },
+          { id: 1, productId: null, name: "", quantity: 0, unitPrice: 0, discount: 0, subtotal: 0 },
         ])
       } catch (err) {
         setError(err instanceof Error ? err.message : "Nao foi possivel salvar o pedido")

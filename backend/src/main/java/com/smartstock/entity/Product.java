@@ -2,10 +2,11 @@ package com.smartstock.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -15,7 +16,8 @@ import jakarta.persistence.Table;
 public class Product {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -32,6 +34,9 @@ public class Product {
 
     private String unit;
 
+    @Column(name = "stock_location_id")
+    private Long stockLocationId;
+
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal price;
 
@@ -43,9 +48,6 @@ public class Product {
 
     @PrePersist
     void prePersist() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
         if (status == null) {
             status = "Ativo";
         }
@@ -60,11 +62,11 @@ public class Product {
         }
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -114,6 +116,14 @@ public class Product {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public Long getStockLocationId() {
+        return stockLocationId;
+    }
+
+    public void setStockLocationId(Long stockLocationId) {
+        this.stockLocationId = stockLocationId;
     }
 
     public BigDecimal getPrice() {

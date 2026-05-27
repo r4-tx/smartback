@@ -13,6 +13,7 @@ public record CreateProductRequest(
         String ref,
         @NotNull @PositiveOrZero Integer stock,
         String unit,
+        Long stockLocationId,
         @NotNull @PositiveOrZero BigDecimal price
 ) {
 }

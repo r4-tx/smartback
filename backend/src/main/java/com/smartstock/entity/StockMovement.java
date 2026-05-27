@@ -20,7 +20,7 @@ public class StockMovement {
     private LocalDateTime date;
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private Long productId;
 
     @Column(nullable = false)
     private String type;
@@ -60,11 +60,11 @@ public class StockMovement {
         this.date = date;
     }
 
-    public UUID getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(UUID productId) {
+    public void setProductId(Long productId) {
         this.productId = productId;
     }
 

@@ -1,7 +1,6 @@
 package com.smartstock.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import com.smartstock.dto.request.CreateProductRequest;
 import com.smartstock.entity.Product;
@@ -34,7 +33,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Product get(@PathVariable UUID id) {
+    public Product get(@PathVariable Long id) {
         return productService.get(id);
     }
 
@@ -45,13 +44,13 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public Product update(@PathVariable UUID id, @Valid @RequestBody CreateProductRequest request) {
+    public Product update(@PathVariable Long id, @Valid @RequestBody CreateProductRequest request) {
         return productService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public void delete(@PathVariable Long id) {
         productService.delete(id);
     }
 }
